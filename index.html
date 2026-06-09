@@ -67,15 +67,15 @@
         const coral = document.createElement("a-gltf-model");
         coral.setAttribute("class", "coral");
         coral.setAttribute("src", "#coralModel");
-        coral.setAttribute("position", "0 0 0");
+        coral.setAttribute("position", "10 0 10");
         coral.setAttribute("scale", `${coralBaseSize} ${coralBaseSize} ${coralBaseSize}`);
         coralGroup.appendChild(coral);
       }
 
       function spawnRandomCoral() {
         const coral = document.createElement("a-gltf-model");
-        const rx = (Math.random() - 0.5) * 40;
-        const rz = (Math.random() - 0.5) * 40;
+        const rx = (Math.random() - 0.5) * 20;
+        const rz = (Math.random() - 0.5) * 20;
         let currentScale = (score * 5) + coralBaseSize;
         coral.setAttribute("class", "coral");
         coral.setAttribute("src", "#coralModel");
@@ -109,7 +109,7 @@
       scene.addEventListener("loaded", () => {
         initCoral();
         for (let i = 0; i < 30; i++) {
-          spawnTrash((Math.random() - 0.5) * 40, 0, (Math.random() - 0.5) * 40);
+          spawnTrash((Math.random() - 0.5) * 20, 0, (Math.random() - 0.5) * 20);
         }
       });
     </script>
