@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Underwater Restoration VR</title>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <style>
+      body { margin: 0; }
+      #hud { position: fixed; top: 10px; left: 10px; color: white; font-family: Arial; z-index: 999; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 5px; pointer-events: none; }
+    </style>
+  </head>
+
+  <body>
+    <div id="hud">🗑️ Trash cleaned: <span id="score">0</span></div>
+
+    <a-scene vr-mode-ui="enabled: true">
+      <a-assets>
+        <img id="oceanSky" src="bg.jpeg">
+        <a-asset-item id="fishModel" src="fish.glb"></a-asset-item>
+        <a-asset-item id="coralModel" src="coral.glb"></a-asset-item>
+        <a-asset-item id="trashModel" src="trash.glb"></a-asset-item>
+      </a-assets>
+
+      <a-sky src="#oceanSky"></a-sky>
+      
+      <a-entity id="trash-group"></a-entity>
+      <a-entity id="fish-group"></a-entity>
+      <a-entity id="coral-group"></a-entity>
+
+      <a-entity position="0 1.6 0">
+        <a-camera look-controls wasd-controls-enabled="false">
+          <a-cursor raycaster="objects: .trash"></a-cursor>
+        </a-camera>
+      </a-entity>
+      
+      <a-entity light="type: ambient; intensity: 0.8"></a-entity>
+      <a-plane rotation="-90 0 0" width="60" height="60" color="#4477aa" opacity="0.5"></a-plane>
+    </a-scene>
+
+    <script>
+      let score = 0;
+      const coralBaseSize = 100;
+      const coralGroup = document.querySelector("#coral-group");
+      const fishGroup = document.querySelector("#fish-group");
+      const trashGroup = document.querySelector("#trash-group");
+      const scoreText = document.querySelector("#score");
+      const scene = document.querySelector("a-scene");
+
+      function spawnTrash(x, y, z) {
+        const trash = document.createElement("a-gltf-model");
+        trash.setAttribute("src", "#trashModel");
+        trash.setAttribute("position", `${x} ${y} ${z}`);
+        trash.setAttribute("scale", "30 30 30");
+        trash.setAttribute("class", "trash");
+        trash.setAttribute("animation", `property: position; to: ${x} ${y + 0.3} ${z}; dur: 3000; dir: alternate; loop: true; easing: easeInOutSine`);
+        
+        trash.addEventListener("click", () => {
+          trash.remove();
+          score++;
+          scoreText.textContent = score;
+          checkProgress();
+        });
+        trashGroup.appendChild(trash);
+      }
+
+      function initCoral() {
+        const coral = document.createElement("a-gltf-model");
+        coral.setAttribute("class", "coral");
+        coral.setAttribute("src", "#coralModel");
+        coral.setAttribute("position", "0 0 0");
+        coral.setAttribute("scale", `${coralBaseSize} ${coralBaseSize} ${coralBaseSize}`);
+        coralGroup.appendChild(coral);
+      }
+
+      function spawnRandomCoral() {
+        const coral = document.createElement("a-gltf-model");
+        const rx = (Math.random() - 0.5) * 40;
+        const rz = (Math.random() - 0.5) * 40;
+        let currentScale = (score * 5) + coralBaseSize;
+        coral.setAttribute("class", "coral");
+        coral.setAttribute("src", "#coralModel");
+        coral.setAttribute("position", `${rx} 0 ${rz}`);
+        coral.setAttribute("scale", `${currentScale} ${currentScale} ${currentScale}`);
+        coralGroup.appendChild(coral);
+        return {x: rx, z: rz};
+      }
+
+      function spawnFishNear(x, z) {
+        const fish = document.createElement("a-gltf-model");
+        fish.setAttribute("src", "#fishModel");
+        fish.setAttribute("position", `${x} 1 ${z}`);
+        fish.setAttribute("scale", "10 10 10");
+        fish.setAttribute("animation", `property: position; to: ${x + (Math.random()*4-2)} 1 ${z + (Math.random()*4-2)}; dur: 4000; dir: alternate; loop: true`);
+        fishGroup.appendChild(fish);
+      }
+
+      function checkProgress() {
+        document.querySelectorAll(".coral").forEach(c => {
+          let newScale = (score * 5) + coralBaseSize;
+          c.setAttribute("scale", `${newScale} ${newScale} ${newScale}`);
+        });
+
+        if (score % 3 === 0 && score > 0) {
+          let pos = spawnRandomCoral();
+          for(let i=0; i<3; i++) spawnFishNear(pos.x, pos.z);
+        }
+      }
+
+      scene.addEventListener("loaded", () => {
+        initCoral();
+        for (let i = 0; i < 30; i++) {
+          spawnTrash((Math.random() - 0.5) * 40, 0, (Math.random() - 0.5) * 40);
+        }
+      });
+    </script>
+  </body>
+</html>
